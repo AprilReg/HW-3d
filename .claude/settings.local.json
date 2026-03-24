@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find 'C:\\\\Dev Projects\\\\unity\\\\HW1' -type f -name *.md -o -name README* -o -name CLAUDE.md -o -name .cursorules -o -name Makefile)"
+    ]
+  }
+}
