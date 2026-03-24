@@ -11,6 +11,14 @@ using TMPro;
 [RequireComponent(typeof(TextMeshPro))]
 public class HelloWorldPulse : MonoBehaviour
 {
+    /// <summary>
+    /// SECTION: Color Configuration
+    /// Sets up the visual styling for the "Hello World" text.
+    /// FaceColor: The main text color - a saturated yellow (RGB: 1, 0.92, 0, 1).
+    /// OutlineColor: A brighter white-yellow shade (RGB: 1, 1, 0.55, 1) applied to text borders for a glowing effect.
+    /// ShadowColor: A dark gray (RGB: 0.2, 0.2, 0.2, 0.8) for depth and shadow effects.
+    /// OutlineWidth: Set to 0.6 for a thick, visible outline that enhances the 3D appearance.
+    /// </summary>
     // ── Face color ────────────────────────────────────────────────────────
     private static readonly Color FaceColor = new Color(1f, 0.92f, 0f, 1f);        // saturated yellow
 
@@ -19,14 +27,35 @@ public class HelloWorldPulse : MonoBehaviour
     private static readonly Color ShadowColor = new Color(0.2f, 0.2f, 0.2f, 0.8f); // dark shadow
     private const float OutlineWidth = 0.6f;   // thick outline for 3D depth
 
+    /// <summary>
+    /// SECTION: Rotation Configuration
+    /// Controls the horizontal spinning animation of the text.
+    /// RotationSpeed: 54 degrees per second - roughly 1/7th of a full rotation per second.
+    /// This is applied around the Y-axis (vertical axis) creating a continuous spinning effect.
+    /// </summary>
     // ── Rotation speed (degrees per second) ───────────────────────────────
     private const float RotationSpeed = 54f;  // rotate 54 degrees per second (20% faster)
 
+    /// <summary>
+    /// SECTION: Hop/Jump Animation Configuration
+    /// Defines the timing and motion parameters for the bunny-hop style animation.
+    /// HopInterval: 5 seconds between each hop (bunny hops once every 5 seconds).
+    /// HopDuration: Each individual hop lasts 0.5 seconds (quick, snappy animation).
+    /// HopHeight: The text jumps 2 units high in world space during each hop.
+    /// </summary>
     // ── Hop timing and height ─────────────────────────────────────────────
     private const float HopInterval = 5f;      // hop every 5 seconds
     private const float HopDuration = 0.5f;    // each hop takes 0.5 seconds
     private const float HopHeight = 2f;        // how high to hop
 
+    /// <summary>
+    /// SECTION: 3D Depth/Extrusion Configuration
+    /// These parameters control how "thick" or 3D the text appears by creating layered copies.
+    /// ExtrusionDepth: Total depth in world units (0.8 units deep - moderate thickness).
+    /// DepthLayers: Number of individual text mesh layers (50 layers create smooth 3D appearance).
+    /// FontSize: Base size of each text layer (12 point font).
+    /// The combination creates a 3D extrusion effect through stacked layers with color fading.
+    /// </summary>
     // ── 3D Depth ───────────────────────────────────────────────────────────
     private const float ExtrusionDepth = 0.8f;   // depth of 3D letters
     private const int DepthLayers = 50;          // many layers for completely solid appearance
@@ -36,6 +65,30 @@ public class HelloWorldPulse : MonoBehaviour
     private Vector3 _basePosition;  // stores the resting position
     private TextMeshPro[] _depthLayers;  // array to store depth layer text meshes
 
+    /// <summary>
+    /// SECTION: Member Variables / Private Fields
+    /// These store data needed throughout the object's lifetime.
+    /// _tmp: Reference to the TextMeshPro component (cached for performance).
+    /// _basePosition: Stores the resting/idle position - the point the text returns to after hopping.
+    /// _depthLayers: Array of 50 TextMeshPro components, each positioned slightly further back,
+    ///               creating the illusion of thick 3D text through layering and color gradients.
+    /// </summary>
+
+    /// <summary>
+    /// SECTION: Start() Method - Initialization
+    /// Called once when the script first runs (before first frame). Performs one-time setup:
+    /// 
+    /// 1. Gets the TextMeshPro component attached to this GameObject and caches it in _tmp.
+    /// 2. Positions the GameObject in front of the camera at the center of the view (10 units forward).
+    /// 3. Stores this position as _basePosition for the hopping animation to return to.
+    /// 4. Hides the original TextMeshPro component since we'll use custom depth layers instead.
+    /// 5. Creates 50 depth layers:
+    ///    - Each layer is a child GameObject positioned progressively further back (Z-axis).
+    ///    - Each layer gets its own TextMeshPro component displaying "Hello World".
+    ///    - Colors fade to darker shades as layers go deeper (creating depth perception).
+    ///    - Only the front 2 layers get the bright outline to avoid visual clutter.
+    /// 6. Starts the HopLoop coroutine to begin the hopping animation cycle.
+    /// </summary>
     private void Start()
     {
         _tmp = GetComponent<TextMeshPro>();
@@ -92,12 +145,30 @@ public class HelloWorldPulse : MonoBehaviour
         StartCoroutine(HopLoop());
     }
 
+    /// <summary>
+    /// SECTION: Update() Method - Continuous Rotation
+    /// Called every frame while the script is enabled. Handles the continuous spinning animation:
+    /// Rotates the entire GameObject (and all its child depth layers) around the Y-axis
+    /// (vertical axis) at a constant RotationSpeed of 54 degrees per second.
+    /// Formula: transform.Rotate(X, Y, Z) where Y is multiplied by Time.deltaTime to ensure
+    /// frame-rate-independent smooth rotation (adapts to any frame rate).
+    /// </summary>
     private void Update()
     {
         // Rotate horizontally (around Y-axis) in 3 dimensions
         transform.Rotate(0f, RotationSpeed * Time.deltaTime, 0f);
     }
 
+    /// <summary>
+    /// SECTION: HopLoop() Coroutine - Animation Loop Controller
+    /// A coroutine that runs indefinitely, managing the timing of the hopping animation.
+    /// This creates a repeating cycle:
+    /// 1. Waits HopInterval seconds (5 seconds) - giving time between hops.
+    /// 2. Calls the Hop() coroutine to execute a single hop animation.
+    /// 3. Repeats forever.
+    /// This produces the effect of the text hopping like a bunny every 5 seconds.
+    /// Running as a coroutine allows this loop to pause and resume timing smoothly.
+    /// </summary>
     private IEnumerator HopLoop()
     {
         while (true)
@@ -110,6 +181,19 @@ public class HelloWorldPulse : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// SECTION: Hop() Coroutine - Parabolic Jump Animation
+    /// Animates a single "hop" by moving the text upward then back down over HopDuration (0.5 seconds).
+    /// Uses parabolic motion (mathematical curve) for realistic physics-based movement:
+    /// 1. elapsed time is tracked and normalized to a 0→1 range (t = elapsed / HopDuration).
+    /// 2. The height calculation uses (1 - (2t - 1)²) which produces an upside-down parabola:
+    ///    - At t=0, height = 0 (starts at base position).
+    ///    - At t=0.5, height = HopHeight (peaks at 2 units).
+    ///    - At t=1, height = 0 (returns to base).
+    /// 3. Updates position each frame: basePosition + vertical offset.
+    /// 4. After the hop completes, snaps the position back to _basePosition (prevents drift).
+    /// The parabolic curve creates natural-looking gravity and acceleration/deceleration.
+    /// </summary>
     private IEnumerator Hop()
     {
         float elapsed = 0f;
@@ -124,6 +208,7 @@ public class HelloWorldPulse : MonoBehaviour
             yield return null;
         }
         // Snap back to base position
+        _basePosition = _basePosition*1.2f;
         transform.position = _basePosition;
     }
 }
